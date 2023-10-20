@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joovis PDF Generator</title>
+    <title>Joovis PDF Generator V1.1</title>
     <script src="pdf-lib.js"></script>
     <script src="jszip.js"></script>
     <script src="xlsx.js"></script>
@@ -207,83 +207,87 @@ button:hover {
               page[0].drawText(String(data[key]), { x: 465, y:270, size: 9});
               break;
             case "ifehler": //l1
-              page[0].drawText(String(data[key]), { x: 465, y:256, size: 9});
-              break;
-            case "ppeak": //l1
-              page[0].drawText(String(data[key]), { x: 465, y:242, size: 9});
-              break;
-            case "rowP": //l1
-              page[0].drawText(String(data[key]), { x: 465, y:229, size: 9});
-              break;
-            case "rowQ": //l1
-              page[0].drawText("-"+String(data[key]), { x: 465, y:188, size: 9});
-              break;
-            case "datum": //l1
-              split1 = data[key].split('-');
-              split2 = split1[2].split(' ');
-              year = split1[0];
-              month = split1[1];
-              monat = "";
-              switch (month) {
-                case "01": monat="Januar"; break;
-                case "02": monat="Februar"; break;
-                case "03": monat="März"; break;
-                case "04": monat="April"; break;
-                case "05": monat="Mai"; break;
-                case "06": monat="Juni"; break;
-                case "07": monat="Juli"; break;
-                case "08": monat="August"; break;
-                case "09": monat="September"; break;
-                case "10": monat="Oktober"; break;
-                case "11": monat="November"; break;
-                case "12": monat="Dezember"; break;
-              }
-              day = split2[0];
-              // Expected output: "fox"
-              page[0].drawText(String(day)+". "+String(monat)+" "+String(year) , { x: 124, y:593, size: 9});
-              page[0].drawText(String(day)+". "+String(monat)+" "+String(year), { x: 162, y:62, size: 9});
-              break;
-            case "datumNaechste": //l1
-              split1 = data[key].split('-');
-              split2 = split1[2].split(' ');
-              year = split1[0];
-              month = split1[1];
-              monat = "";
-              switch (month) {
-                case "01": monat="Januar"; break;
-                case "02": monat="Februar"; break;
-                case "03": monat="März"; break;
-                case "04": monat="April"; break;
-                case "05": monat="Mai"; break;
-                case "06": monat="Juni"; break;
-                case "07": monat="Juli"; break;
-                case "08": monat="August"; break;
-                case "09": monat="September"; break;
-                case "10": monat="Oktober"; break;
-                case "11": monat="November"; break;
-                case "12": monat="Dezember"; break;
-              }
-              day = split2[0];
-              page[0].drawText(String(monat)+" "+String(year), { x: 373, y:552, size: 9});
-              break;
-          }
-        });
-        return pdfDoc.save();
-      }
-      function loadExcel(file) {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            resolve(workbook);
-          };
-          reader.onerror = function (e) {
-            reject(e);
-          };
-          reader.readAsArrayBuffer(file);
-        });
-      }
+              if (Number(data[key]) < Number(30)) {
+                page[0].drawText(String(30), { x: 465, y:256, size: 9});
+           } else {
+           page[0].drawText(String(data[key]), { x: 465, y:256, size: 9});
+           }
+           break;
+           case "ppeak": //l1
+           page[0].drawText(String(data[key]), { x: 465, y:242, size: 9});
+           break;
+           case "rowP": //l1
+           page[0].drawText(String(data[key]), { x: 465, y:229, size: 9});
+           break;
+           case "rowQ": //l1
+           page[0].drawText("-"+String(data[key]), { x: 465, y:188, size: 9});
+           break;
+           case "datum": //l1
+           split1 = data[key].split('-');
+           split2 = split1[2].split(' ');
+           year = split1[0];
+           month = split1[1];
+           monat = "";
+           switch (month) {
+           case "01": monat="Januar"; break;
+                 case "02": monat="Februar"; break;
+                       case "03": monat="März"; break;
+                             case "04": monat="April"; break;
+                                   case "05": monat="Mai"; break;
+                                         case "06": monat="Juni"; break;
+                                               case "07": monat="Juli"; break;
+                                                     case "08": monat="August"; break;
+                                                           case "09": monat="September"; break;
+                                                                 case "10": monat="Oktober"; break;
+                                                                       case "11": monat="November"; break;
+                                                                             case "12": monat="Dezember"; break;
+                                                                                   }
+                                                                                   day = split2[0];
+                                                                                   // Expected output: "fox"
+                                                                                                        page[0].drawText(String(day)+". "+String(monat)+" "+String(year) , { x: 124, y:593, size: 9});
+                                                                                                                                      page[0].drawText(String(day)+". "+String(monat)+" "+String(year), { x: 162, y:62, size: 9});
+                                                                                                                                                                    break;
+                                                                                                                                                                    case "datumNaechste": //l1
+                                                                                                                                                                          split1 = data[key].split('-');
+                                                                                                                                                                          split2 = split1[2].split(' ');
+                                                                                                                                                                          year = split1[0];
+                                                                                                                                                                          month = split1[1];
+                                                                                                                                                                          monat = "";
+                                                                                                                                                                                   switch (month) {
+                                                                                                                                                                                   case "01": monat="Januar"; break;
+                                                                                                                                                                                         case "02": monat="Februar"; break;
+                                                                                                                                                                                               case "03": monat="März"; break;
+                                                                                                                                                                                                     case "04": monat="April"; break;
+                                                                                                                                                                                                           case "05": monat="Mai"; break;
+                                                                                                                                                                                                                 case "06": monat="Juni"; break;
+                                                                                                                                                                                                                       case "07": monat="Juli"; break;
+                                                                                                                                                                                                                             case "08": monat="August"; break;
+                                                                                                                                                                                                                                   case "09": monat="September"; break;
+                                                                                                                                                                                                                                         case "10": monat="Oktober"; break;
+                                                                                                                                                                                                                                               case "11": monat="November"; break;
+                                                                                                                                                                                                                                                     case "12": monat="Dezember"; break;
+                                                                                                                                                                                                                                                           }
+                                                                                                                                                                                                                                                           day = split2[0];
+                                                                                                                                                                                                                                                           page[0].drawText(String(monat)+" "+String(year), { x: 373, y:552, size: 9});
+                                                                                                                                                                                                                                                                                           break;
+                                                                                                                                                                                                                                                                                           }
+                                                                                                                                                                                                                                                                                           });
+                                                                                                                                                                                                                                                                                           return pdfDoc.save();
+                                                                                                                                                                                                                                                                                           }
+                                                                                                                                                                                                                                                                                           function loadExcel(file) {
+                                                                                                                                                                                                                                                                                           return new Promise((resolve, reject) => {
+                                                                                                                                                                                                                                                                                           const reader = new FileReader();
+                                                                                                                                                                                                                                                                                           reader.onload = function (e) {
+                                                                                                                                                                                                                                                                                           const data = new Uint8Array(e.target.result);
+                                                                                                                                                                                                                                                                                           const workbook = XLSX.read(data, { type: 'array' });
+                                                                                                                                                                                                                                                                                           resolve(workbook);
+                                                                                                                                                                                                                                                                                           };
+                                                                                                                                                                                                                                                                                           reader.onerror = function (e) {
+                                                                                                                                                                                                                                                                                           reject(e);
+                                                                                                                                                                                                                                                                                           };
+                                                                                                                                                                                                                                                                                           reader.readAsArrayBuffer(file);
+                                                                                                                                                                                                                                                                                           });
+                                                                                                                                                                                                                                                                                           }
     </script>
   </body>
 </html>
