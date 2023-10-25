@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joovis PDF Generator V1.2</title>
+    <title>Joovis PDF Generator V1.3</title>
     <script src="pdf-lib.js"></script>
     <script src="jszip.js"></script>
     <script src="xlsx.js"></script>
@@ -224,7 +224,7 @@ const { degrees, PDFDocument, StandardFonts, rgb } = PDFLib;
               break;
             case "rowB": //typ
               page[0].drawText(String(data[key]), { x: 345, y:634.5, size: 9});
-    if (data[key] == "S30") { page[0].drawRectangle({ x: 20, y: 294.7, width: 590, height: 13.3, color: rgb(1,1,1) }); }
+    if (data[key] == "S30") { page[0].drawRectangle({ x: 20, y: 294.7, width: 550, height: 13.3, color: rgb(1,1,1) }); }
 
               break;
 
