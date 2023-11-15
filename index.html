@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joovis PDF Generator V1.4</title>
+    <title>Joovis PDF Generator V1.5</title>
     <script src="pdf-lib.js"></script>
     <script src="jszip.js"></script>
     <script src="xlsx.js"></script>
@@ -166,11 +166,11 @@ button:hover {
           outputElement.innerText = 'No matching rows found!';
         } else {
           var currentdate = new Date(); 
-          var datetime = "Protokolle_" + currentdate.getDate() + "-"
-            + (currentdate.getMonth()+1) + "-" 
-            + currentdate.getFullYear() + "-" 
-            + currentdate.getHours() + "-" 
-            + currentdate.getMinutes() + "-" 
+          var datetime = "Protokolle_"+ dateRow.value+ "_" + currentdate.getDate() + 
+            + (currentdate.getMonth()+1)  
+            + currentdate.getFullYear()  
+            + currentdate.getHours() + 
+            + currentdate.getMinutes() + 
             + currentdate.getSeconds(); 
           const zipBlob = await zip.generateAsync({ type: "blob" });
           const link = document.createElement("a");
