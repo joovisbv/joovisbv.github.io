@@ -96,7 +96,6 @@ button:hover {
         const uInt8Array = new Uint8Array(await sqliteFile.arrayBuffer());
         const db = new SQL.Database(uInt8Array);
         let foundRows = 0;
-  console.log(dataArray);
         for (const rowArray of dataArray) {
           const row = {
             B: rowArray[1 - emptyfirstcell],
