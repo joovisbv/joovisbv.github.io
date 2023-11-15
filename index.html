@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joovis PDF Generator V1.3</title>
+    <title>Joovis PDF Generator V1.4</title>
     <script src="pdf-lib.js"></script>
     <script src="jszip.js"></script>
     <script src="xlsx.js"></script>
@@ -85,22 +85,29 @@ button:hover {
         const excelFile = document.getElementById('excelFile').files[0];
         const sqliteFile = document.getElementById('sqliteFile').files[0];
         const workbook = await loadExcel(excelFile);
-        const dataArray = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+        const dataArray = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header:1}); 
+        // DIRTYHACK
+        const emptyfirstcell = XLSX.utils.decode_range(workbook.Sheets[workbook.SheetNames[0]]['!ref']).s.c;
+
         const zip = new JSZip();
         const uInt8Array = new Uint8Array(await sqliteFile.arrayBuffer());
         const db = new SQL.Database(uInt8Array);
         let foundRows = 0;
+  console.log(dataArray);
         for (const rowArray of dataArray) {
           const row = {
-            B: rowArray[1],
-            D: rowArray[3],
-            E: rowArray[4],
-            P: rowArray[15],
-            Q: rowArray[16],
-            R: rowArray[17]
+            B: rowArray[1 - emptyfirstcell],
+            D: rowArray[3- emptyfirstcell],
+            E: rowArray[4- emptyfirstcell],
+            P: rowArray[15- emptyfirstcell],
+            Q: rowArray[16- emptyfirstcell],
+            R: rowArray[17- emptyfirstcell]
           };
+
+            
           try {
             const result = db.exec(`SELECT Geraete_Index,Geraete_Hersteller,Geraete_Datum_Naechste_Pruefung,Geraete_Pruefdatum FROM Geraete WHERE Geraete_ID = '${row.D}'`);
+
             if (result[0] && result[0].values.length) {
               const [
                 geraeteIndex,
@@ -287,6 +294,7 @@ const { degrees, PDFDocument, StandardFonts, rgb } = PDFLib;
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
             resolve(workbook);
+
           };
           reader.onerror = function (e) {
             reject(e);
