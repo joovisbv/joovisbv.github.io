@@ -25,7 +25,8 @@
  <label for="pruefer">Prüfer</label>
   <select name="pruefer" id="pruefer">
     <option value="1">Florian Dorn</option>
-    <option value="2">Krishna Pathmanathan</option>
+    <option value="2">Selves Pathmanathan</option>
+    <option value="3">Krishna Pathmanathan</option>
   </select>
   <br><br>
  <label for="fname">Datum (Spalte K)</label>
@@ -193,7 +194,26 @@ const { degrees, PDFDocument, StandardFonts, rgb } = PDFLib;
 
     }
     
+    if (document.getElementById('pruefer').value === '2') {
 
+    const imageBytes = await fetch('unterschrift_2.jpeg').then((res) => res.arrayBuffer());
+    const image = await pdfDoc.embedJpg(imageBytes);
+
+    // Draw the image onto the page
+    page[0].drawImage(image, {
+        x: 450, // Adjust x-coordinate as needed
+        y: 53, // Adjust y-coordinate as needed
+        width: 80, // Adjust width as needed
+        height: 40, // Adjust height as needed
+    });
+  page[0].drawRectangle({ x: 290, y:42, height:60,width:100, color:rgb(1, 1, 1) });
+  page[0].drawText("Selves Pathmanathan", { x: 290, y:62, size: 9});
+  page[0].drawRectangle({ x: 329, y:592, height:10,width:100, color:rgb(1, 1, 1) });
+
+  page[0].drawText("Selves Pathmanathan", { x: 329, y:593.5, size: 9});
+
+
+    }
 
 
 
