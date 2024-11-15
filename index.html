@@ -234,7 +234,10 @@ async function pruefprotokollPDF(tasks) {
       doc.text(""+task.netzteil, ml+ml5, mt+(30*step));
       //Leistung im Betrieb
       doc.text(""+task.ppeak, ml+ml5, mt+(34*step));
-      if (task.dbBezeichnung == "Aerogen Usb Controller"){
+      if (task.dbBezeichnung == "Aerogen Usb Controller" ||
+        task.dbBezeichnung == "AerogenSoloUSB"  ||
+        task.dbBezeichnung == "Aerogen USB Controller"
+      ){
         doc.text("Benning ST 755 | Ferrex Ans-23-060 / 824965", ml+20, mt+(15*step));
         doc.text("4,9 … 5,1 ", ml+ml3, mt+(30*step));
       } else {
