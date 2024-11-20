@@ -1,16 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joovis Protokollgenerator V1.9</title>
-    <script src="jszip.js"></script>
-    <script src="jspdf.js"></script>
-    <script src="xlsx.js"></script>
-    <script src="FileSaver.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/sql-wasm.js"></script>
-    <script src="https://unpkg.com/qrcode@1.5.1/build/qrcode.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <script src="js/jszip.js"></script>
+    <script src="js/jspdf.js"></script>
+    <script src="js/xlsx.js"></script>
+    <script src="js/FileSaver.min.js"></script>
+    <script src="js/sql-wasm.js"></script>
+    <script src="js/qrcode.js"></script>
+    <link rel="stylesheet" href="css/pico.min.css" />
   </head>
   <body>
     <section style="margin:100px;margin-top:100px">
@@ -30,9 +31,17 @@
       <input type="text" id="dateRow" name="dateRow" placeholder="">
       <br><br>
       <button onclick="processFiles()">Protokolle erstellen</button>
+    <br><br>
+
+    <br id="anzahl_protokolle">
+
+
+
+
     </section>
     <script>
 const { jsPDF } = window.jspdf;
+const targetElement = document.getElementById('anzahl_protokolle');
 let pruefer={};
 let SQL;
 const config = {
@@ -471,6 +480,10 @@ LIMIT 1
     console.log(collectedData);
     if (collectedData.length > 0) {
       pruefprotokollPDF(collectedData);
+const newContent = ` <ins><b style="font-weight:bold">${collectedData.length}</b> Protokolle werden erstellt...</ins><br> `;
+
+// Insert the new content after the target element
+targetElement.insertAdjacentHTML('afterend', newContent);
     } 
   };
   fileReader.readAsArrayBuffer(file);
@@ -478,3 +491,4 @@ LIMIT 1
 </script>
   </body>
 </html>
+
