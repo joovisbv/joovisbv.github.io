@@ -1,0 +1,426 @@
+
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joovis Protokollgenerator V1.9</title>
+    <script src="js/jszip.js"></script>
+    <script src="js/jspdf.js"></script>
+    <script src="js/xlsx.js"></script>
+    <script src="js/FileSaver.min.js"></script>
+    <script src="js/sql-wasm.js"></script>
+    <script src="js/qrcode.js"></script>
+    <link rel="stylesheet" href="css/pico.min.css" />
+  </head>
+  <body>
+    <section style="margin:100px;margin-top:100px">
+      <label for="excelFile">Excel Tabelle (*.xlsx)</label>
+      <input type="file" name="excelFile" id="excelFile" />
+      <br><br>
+      <label for="sqliteFile">Joovis.db (*.db)</label>
+      <input type="file" name="sqliteFile" id="sqliteFile" />
+      <br><br>
+      <label for="pruefer">Prüfer</label>
+      <select name="pruefer" id="pruefer">
+        <option value="florian">Florian Dorn</option>
+        <option value="selves">Selves Pathmanathan</option>
+      </select>
+      <br><br>
+      <label for="fname">Datum (Spalte K)</label>
+      <input type="text" id="dateRow" name="dateRow" placeholder="">
+      <br><br>
+      <button onclick="processFiles()">Protokolle erstellen</button>
+    <br><br>
+
+    <br id="anzahl_protokolle">
+
+
+
+
+    </section>
+    <script>
+const { jsPDF } = window.jspdf;
+const targetElement = document.getElementById('anzahl_protokolle');
+let pruefer={};
+let SQL;
+const config = {
+  locateFile: filename => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/${filename}`
+};
+initSqlJs(config).then(sql => {
+  SQL = sql;
+});
+function formatDateToHHMMSSMMYY() {
+  const now = new Date();
+  // Get hours, minutes, and seconds in de_DE locale
+  const options = {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false, // Use 24-hour format
+    timeZone: 'Europe/Berlin' // Set the time zone to Berlin
+  };
+  const timeFormatter = new Intl.DateTimeFormat('de-DE', options);
+  const timeParts = timeFormatter.formatToParts(now);
+  // Extract hours, minutes, and seconds
+  const hours = timeParts.find(part => part.type === 'hour').value;
+  const minutes = timeParts.find(part => part.type === 'minute').value;
+  const seconds = timeParts.find(part => part.type === 'second').value;
+  // Get month and year
+  const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const year = String(now.getFullYear()).slice(-2); // Get the last two digits of the year
+  // Format the date and time as HHMMSS_MMYY
+  const formattedDateTime = `${hours}${minutes}${seconds}_${month}${year}`;
+  return formattedDateTime;
+}
+// Example usage:
+function formatDateToMMYYYY(dateString) {
+  // Create a Date object from the input string
+  const date = new Date(dateString);
+  // Get the month and year from the Date object in German
+  const month = date.toLocaleString('de-DE', { month: 'long' });
+  const year = date.getFullYear();
+  // Combine the month and year into the desired format
+  return `${month} ${year}`;
+}
+function formatDateToDDMMYYYY(dateString) {
+  // Create a Date object from the input string
+  const date = new Date(dateString);
+  // Get the day, month, and year from the Date object
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = date.toLocaleString('de-DE', { month: 'long' });
+  const year = date.getFullYear();
+  // Combine the day, month, and year into the desired format
+  return `${day}. ${month} ${year}`;
+}
+function formatDateToMMYY(dateString) {
+  // Create a Date object from the input string
+  const date = new Date(dateString);
+  // Get the month and year from the Date object
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const year = String(date.getFullYear()).slice(-2); // Get the last two digits of the year
+  // Combine the month and year into the desired format
+  return `${month}${year}`;
+}
+async function pruefprotokollPDF(tasks) {
+  const now = new Date();
+  const timestamp = now.toISOString().replace('T', ' ').replace('Z', 'Z');
+  let i=0;
+  let filename="Protokolle_"+formatDateToHHMMSSMMYY()+".zip";
+  // const warenannahmeDate= formatter.format(warenannahme);
+  const date = new Date();
+  let day = date.getDate().toString().padStart(2, '0'); // Get day and pad with leading zero if needed
+  let month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based, so add 1
+  let year = date.getFullYear(); // Get the full year (YYYY)
+  let today = `${day}.${month}.${year}`;
+  let doc;
+  // Get the month and year
+  var unterschrift= new Image();
+  unterschrift.src = "./img/"+pruefer.value+".jpg"
+  var img = new Image();
+  img.src = './img/logo.jpg'
+  let ml=24;
+  let ml2=85;
+  let ml3=100;
+  let ml4=125;
+  let ml5=142;
+  let mt=38;
+  let step=5.4;
+  function checkbox(x,y,checked){
+    x=x+0.5;
+    doc.line(x, y, x+2.4, y);
+    doc.line(x, y-2.4, x+2.4, y-2.4);
+    doc.line(x, y-2.4, x, y);
+    doc.line(x+2.4, y, x+2.4, y-2.4);
+    if (checked){
+      doc.line(x, y, x+2.4, y-2.5);
+      doc.line(x, y-2.5, x+2.4, y);
+    }
+  }
+  function header(task){
+    doc.addImage(img, 'jpg', 143, 10,47,12)
+    doc.setTextColor("#000000");
+    doc.setFontSize(12);
+    doc.setFont(undefined,"bold");
+    doc.text("Prüfprotokoll medizinische Geräte nach DIN EN 62353", 21, 29);
+    doc.setFontSize(8.5);
+    doc.text("Auftraggeber", ml, mt);
+    doc.setFont(undefined,"normal");
+    doc.text("Firma: Coloplast Distribution GmbH", ml, mt+step);
+    doc.text("Ansprechpartner: Thomas Hoffstadt", ml, mt+(2*step));
+    doc.text("", ml, mt+(3*step)); //war Telefonnummer (Tel.:..)
+    doc.text("Straße: Werner-Schroeder-Str. 1", ml+ml2, mt+step);
+    doc.text("PLZ, Ort: 21035 Hamburg", ml+ml2, mt+(2*step));
+    doc.setFont(undefined,"bold");
+    doc.text("Gerätedaten", ml, mt+(4*step));
+    doc.setFont(undefined,"normal");
+    doc.text("Hersteller:", ml, mt+(5*step));
+    doc.text(task.hersteller, ml+15, mt+(5*step));
+    doc.text("Gerätenummer: -", ml, mt+(6*step));
+    doc.text("Schutzklasse: II", ml, mt+(7*step));
+    doc.text("Prüfdatum: "+formatDateToDDMMYYYY(task.datum), ml, mt+(8*step));
+    doc.text("Gerätetyp:", ml+ml2, mt+(5*step));
+    doc.text(task.bezeichnung, ml+ml2+16, mt+(5*step));
+    doc.text("Seriennummer:", ml+ml2, mt+(6*step));
+    doc.text(String(task.seriennummer), ml+ml2+22, mt+(6*step));
+    doc.text("Isolationstyp: BF", ml+ml2, mt+(7*step));
+    doc.text("Prüfer:", ml+ml2, mt+(8*step));
+    doc.text(""+pruefer.label, ml+ml2+10, mt+(8*step));
+    doc.setFont(undefined,"bold");
+    doc.text("Art der Prüfung", ml, mt+(10*step));
+    doc.setFont(undefined,"normal");
+    checkbox(ml,mt+(11*step),false);
+    doc.text("Erstprüfung", ml+5, mt+(11*step));
+    doc.text("Wiederholungsprüfung", ml+5, mt+(12*step));
+    checkbox(ml,mt+(12*step),true);
+    doc.text("Nächste Prüfung:", ml+ml2, mt+(12*step));
+    doc.text(formatDateToMMYYYY(task.datumNaechste), ml+ml2+25, mt+(12*step));
+    doc.text("Nach Instandsetzung", ml+5, mt+(13*step));
+    checkbox(ml,mt+(13*step),false);
+    doc.setFont(undefined,"bold");
+    doc.text("Prüfmittel:", ml, mt+(15*step));
+    doc.text("Prüfschritte", ml, mt+(17*step));
+    doc.text("Kriterium", ml+ml3, mt+(17*step));
+    doc.text("Einheit", ml+ml4, mt+(17*step));
+    doc.text("Ergebnis", ml+ml5, mt+(17*step));
+    doc.setFont(undefined,"normal");
+    doc.text("Keine Schäden am Gehäuse feststellbar", ml, mt+(18*step));
+    doc.text("Ja", ml+ml3, mt+(18*step));
+    doc.text("OK", ml+ml5, mt+(18*step));
+    doc.text("Kein unabsichtliches Berühren gefährlicher aktiver Teile möglich?", ml, mt+(19*step));
+    doc.text("Ja", ml+ml3, mt+(19*step));
+    doc.text("OK", ml+ml5, mt+(19*step));
+    doc.text("Sind Schraubenverbindungen/Schraubabdeckungen fest?", ml, mt+(20*step));
+    doc.text("Ja", ml+ml3, mt+(20*step));
+    doc.text("OK", ml+ml5, mt+(20*step));
+    doc.text("Keine unzulässigen Eingriffe und Änderungen erkennbar?", ml, mt+(21*step));
+    doc.text("Ja", ml+ml3, mt+(21*step));
+    doc.text("OK", ml+ml5, mt+(21*step));
+    doc.text("Sind keine äußeren Mängel der Anschlussleitung feststellbar?", ml, mt+(22*step));
+    doc.text("Ja", ml+ml3, mt+(22*step));
+    doc.text("OK", ml+ml5, mt+(22*step));
+    doc.text("Ist das ME-Geräte frei von sicherheitsmindernden", ml, mt+(23*step));
+    doc.text("Ja", ml+ml3, mt+(23*step));
+    doc.text("OK", ml+ml5, mt+(23*step));
+    doc.text("Beschädigung oder Verschmutzungen?", ml, mt+(23.9*step));
+    doc.text("Ist das Typenschild vollständig und gut lesbar?", ml, mt+(25*step));
+    doc.text("Ja", ml+ml3, mt+(25*step));
+    doc.text("OK", ml+ml5, mt+(25*step));
+    doc.text("Sind alle Funktionselemente im einwandfreien Zustand?", ml, mt+(26*step));
+    doc.text("Ja", ml+ml3, mt+(26*step));
+    doc.text("OK", ml+ml5, mt+(26*step));
+    doc.text("Ist der Akku vollständig geladen?", ml, mt+(27*step));
+    doc.text("Ja", ml+ml3, mt+(27*step));
+    doc.text("OK", ml+ml5, mt+(27*step));
+    doc.text("Ist die Schutzleiterwiderstandsprüfung durchführbar?", ml, mt+(28*step));
+    doc.text("Nein", ml+ml3, mt+(28*step));
+    doc.text("OK", ml+ml5, mt+(28*step));
+    doc.text("Kein Kurzschluss festgestellt ", ml, mt+(29*step));
+    doc.text("Ja", ml+ml3, mt+(29*step));
+    doc.text("OK", ml+ml5, mt+(29*step));
+    doc.text("Sekundärspannung der Zuleitung (Netzteil)", ml, mt+(30*step));
+    doc.text("V (DC)", ml+ml4, mt+(30*step));
+    doc.text("207,0 … 253,0", ml+ml3, mt+(31*step));
+    doc.text("Angelegte Netzspannung", ml, mt+(31*step));
+    doc.text("V (AC)", ml+ml4, mt+(31*step));
+    doc.text("Differenzstrom", ml, mt+(32*step));
+    doc.text("< 500.0", ml+ml3, mt+(32*step));
+    doc.text("µA", ml+ml4, mt+(32*step));
+    doc.text("Differenzstrom (P) ", ml, mt+(33*step));
+    doc.text("< 500.0", ml+ml3, mt+(33*step));
+    doc.text("µA", ml+ml4, mt+(33*step));
+    doc.text("Leistung im Betrieb", ml, mt+(34*step));
+    doc.text("W", ml+ml4, mt+(34*step));
+  }
+  function geraet(task){
+    if (task.hersteller == "Aerogen Ltd"){
+      doc.text(""+task.l1, ml+ml5, mt+(31*step));
+      //iabl
+      doc.text(""+task.iabl, ml+ml5, mt+(32*step));
+      //ifehler
+      doc.text(""+task.ifehler, ml+ml5, mt+(33*step));
+      //Sekundärspannung Netzteil
+      doc.text(""+task.netzteil, ml+ml5, mt+(30*step));
+      //Leistung im Betrieb
+      doc.text(""+task.ppeak, ml+ml5, mt+(34*step));
+      if (task.dbBezeichnung == "Aerogen Usb Controller" ||
+        task.dbBezeichnung == "AerogenSoloUSB"  ||
+        task.dbBezeichnung == "Aerogen USB Controller"
+      ){
+        doc.text("Benning ST 755 | Ferrex Ans-23-060 / 824965", ml+20, mt+(15*step));
+        doc.text("4,9 … 5,1 ", ml+ml3, mt+(30*step));
+      } else {
+        doc.text("Benning ST 755 | Mastech MS8229", ml+20, mt+(15*step));
+        doc.text("8,8 … 9,5", ml+ml3, mt+(30*step));
+      }} else {
+      // l1
+      doc.text(""+task.l1, ml+ml5, mt+(31*step));
+      //iabl
+      doc.text(""+task.iabl, ml+ml5, mt+(32*step));
+      //ifehler
+      doc.text(""+task.ifehler, ml+ml5, mt+(33*step));
+      //Sekundärspannung Netzteil
+      doc.text(""+task.netzteil, ml+ml5, mt+(30*step));
+      //volumenstrom
+      doc.text(""+task.volumenstrom, ml+ml5, mt+(35*step));
+      //Leistung im Betrieb
+      doc.text(""+task.ppeak, ml+ml5, mt+(34*step));
+      // Vakuum
+      doc.text("-"+task.vakuum, ml+ml5, mt+(38*step));
+      doc.text("Benning ST 755 | Mastech MS8229 | Greisinger GMH 3161 | Schwebekörperdurchflussmessgerät K32", ml+16.5, mt+(15*step));
+      if (task.hersteller == "DeVilbiss Healthcare"){
+        doc.text("11,8 … 12,9", ml+ml3, mt+(30*step));
+      } else {
+        doc.text("11,8 … 12,5", ml+ml3, mt+(30*step));
+      }
+      doc.text("Volumenstrom (max)", ml, mt+(35*step));
+      doc.text("16,0 … 35,0", ml+ml3, mt+(35*step));
+      doc.text("l/min", ml+ml4, mt+(35*step));
+      doc.text("Läuft die Pumpe unter Last mit Akku an?", ml, mt+(36*step));
+      doc.text("Ja", ml+ml3, mt+(36*step));
+      doc.text("OK", ml+ml5, mt+(36*step));
+      doc.text("Stimmen beide Vakuummeter miteinander überein?", ml, mt+(37*step));
+      doc.text("Ja", ml+ml3, mt+(37*step));
+      doc.text("OK", ml+ml5, mt+(37*step));
+      doc.text("Vakuum (max)", ml, mt+(38*step));
+      doc.text("-0,9 … -0,75", ml+ml3, mt+(38*step));
+      doc.text("bar", ml+ml4, mt+(38*step));
+    }
+  }
+  function footer(task){
+    let bewertung;
+    if (task.hersteller == "Aerogen Ltd"){
+      bewertung="36";
+    } else {
+      bewertung="40";
+    }
+    doc.setFont(undefined,"bold");
+    doc.text("Gesamtbewertung", ml, mt+(bewertung*step));
+    bewertung++;
+    doc.setFont(undefined,"normal");
+    doc.text("Das Gerät hat keine Mängel", ml+5, mt+( bewertung*step));
+    checkbox(ml,mt+(bewertung*step),true);
+    doc.text("Mängel / Bemerkung:", ml+ml3, mt+(bewertung*step));
+    bewertung++;
+    doc.text("Das Gerät weist Sicherheitsmängel auf.", ml+5, mt+(bewertung*step));
+    checkbox(ml,mt+(bewertung*step),false);
+    bewertung=bewertung+0.9;
+    doc.text("Es darf erst nach deren Beseitigung weitergetrieben werden. ", ml+5, mt+(bewertung*step));
+    doc.text("Ort / Datum: Kerkrade, "+formatDateToDDMMYYYY(task.datum)+"", ml, mt+(45.5*step));
+    doc.text("Prüfer:", ml+64, mt+(45.5*step));
+    doc.text(""+pruefer.label, ml+74, mt+(45.5*step));
+    doc.text("Unterschrift:", ml+ml3+12, mt+(45.5*step));
+    doc.addImage(unterschrift, 'jpg', ml+ml3+30, mt+(43.8*step),30,12)
+  }
+  function grid(task){
+    let skip;
+    let lines;
+    if (task.hersteller == "Aerogen Ltd"){
+      lines=19;
+      skip=195.5; 
+    } else {
+      skip=217; 
+      lines=23;
+    }
+
+
+    doc.setFillColor(230,230,230);
+    doc.rect(ml-3, mt+50, 168, step, 'F');
+    doc.rect(ml-3, mt+88, 168, step, 'F');
+    doc.rect(ml-3, mt+skip-5, 168, step, 'F');
+    doc.line(ml-3, mt+80+step-2, ml+165, mt+80+step-2);
+    doc.line(ml-3, mt+80+step-2, ml-3, mt+80-step+2);
+    doc.line(ml+165, mt+80+step-2, ml+165, mt+80-step+2);
+    doc.line(ml-3, mt+80-step+2, ml+165, mt+80-step+2);
+    for (let i = 0; i < 4; i++) {
+      doc.line(ml-3, (mt-step+1.5)+(step*i), ml+165, (mt-step+1.5)+(step*i));
+      if (i<2){
+        doc.line(ml-3, (mt-step+1.5)+(step*i), ml-3, (mt+step+1.5)+(step*i));
+        doc.line(ml+165, (mt-step+1.5)+(step*i), ml+165, (mt+step+1.5)+(step*i));
+      }
+      if(i!=0 && i<2) {doc.line(ml+ml2-2, (mt-step+1.5)+(step*i), ml+ml2-2, (mt+step+1.5)+(step*i)); }
+    } 
+    for (let i = 0; i < 11; i++) {
+      doc.line(ml-3, (23+mt-step)+(step*i), ml+165, (23+mt-step)+(step*i));
+      if (i<9){
+        doc.line(ml-3, (23+mt-step)+(step*i), ml-3, (23+mt+step)+(step*i));
+        doc.line(ml+165, (23+mt-step)+(step*i), ml+165, (23+mt+step)+(step*i));
+      }
+      if(i!=0 && i<5 ) {doc.line(ml+ml2-2, (23+mt-step)+(step*i), ml+ml2-2, (23+mt+step)+(step*i)); }
+      if(i>6 && i<9 ) {doc.line(ml+ml2-2, (23+mt-step)+(step*i), ml+ml2-2, (23+mt+step)+(step*i)); }
+    } 
+    for (let i = 0; i < lines; i++) {
+      if (i !=7){
+        if (i<lines-2){
+          doc.line(ml-3, (92+mt-step+1.5)+(step*i), ml-3, (92+mt+step+1.5)+(step*i));
+          doc.line(ml+165, (92+mt-step+1.5)+(step*i), ml+165, (92+mt+step+1.5)+(step*i));
+          doc.line(ml4-3, (92+mt-step+1.5)+(step*i), ml4-3, (92+mt+step+1.5)+(step*i));
+          doc.line(ml4+22, (92+mt-step+1.5)+(step*i), ml4+22, (92+mt+step+1.5)+(step*i));
+          doc.line(ml4+39, (92+mt-step+1.5)+(step*i), ml4+39, (92+mt+step+1.5)+(step*i));
+        }
+        doc.line(ml-3, (92+mt-step+1.5)+(step*i), ml+165, (92+mt-step+1.5)+(step*i));
+      }
+    } 
+    doc.setFillColor(255,255,255);
+    doc.rect(ml-4, mt+44.7, 170, 5.2, 'F');
+    // GESAMTBEWERTUNG
+    doc.line(ml-3, (skip+mt-step+0.5), ml-3, (skip+mt+(3*step)+0.5));
+    doc.line(ml+165, (skip+mt-step+0.5), ml+165, (skip+mt+(3*step)+0.5));
+    doc.line(ml4-3, (skip+mt-step+6), ml4-3, (skip+mt+(2*step)+5.9));
+    doc.line(ml-3, (skip+mt-step+0.5), ml+165, (skip+mt-step+0.5));
+    doc.line(ml-3, (skip+mt-step+22), ml+165, (skip+mt-step+22));
+    doc.line(ml-3, (skip+mt+0.5), ml+165, (skip+mt+0.5));
+    doc.line(ml-3, (skip+mt-step+11.5), ml4-3, (skip+mt-step+11.5));
+  };
+  for (let task of tasks) {
+    doc = new jsPDF();
+    grid(task);
+    header(task);
+    geraet(task);
+    footer(task);
+    if (task.dbBezeichnung == "Asskea S30") {
+      doc.setFillColor(255,255,255);
+      doc.rect(ml-5, mt+(29.34*step), 173, step-0.3, 'F');
+    }
+    doc.setFillColor(255,255,255);
+    doc.rect(ml+ml2-1.89, mt+(11*step)+1, 81.78, 2, 'F');
+    doc.rect(ml+ml2-1.89, mt+(12*step)+1, 81.78, 2, 'F');
+//    QRCode.toDataURL(String(task.seriennummer), { errorCorrectionLevel: 'H', margin:0 }, (err, qrcode) => { if (err) throw err; doc.addImage(qrcode, 'PNG', ml5+31.5, mt+(10*step)+2.6, 14, 14); });
+    doc.save('blob.pdf');
+}
+}
+async function processFiles() {
+  const prueferElement = document.getElementById("pruefer");
+  // Get the value
+  pruefer.value = prueferElement.value;
+  // Get the label (text)
+  if (prueferElement.tagName === "SELECT") {
+    // If it's a <select> element, get the text of the selected option
+    pruefer.label = prueferElement.options[prueferElement.selectedIndex].text;
+  } else {
+    // For other elements like <input>, get the value as the label
+    pruefer.label = prueferElement.value;
+  }
+      let collectedData= [ {
+bezeichnung: "M20",
+datum: "2024-01-09 10:28:55",
+datumNaechste: "2026-01-09 00:00:00",
+dbBezeichnung: "Asskea M20",
+hersteller: "Asskea GmbH",
+iabl: 30.8,
+id: undefined,
+ifehler: 82.4,
+l1: 239.6,
+netzteil: "12,39",
+ppeak: 32.1,
+seriennummer: 40045987,
+vakuum: "0,33",
+volumenstrom: "14,5",
+      }
+      ]
+      pruefprotokollPDF(collectedData);
+}
+</script>
+  </body>
+</html>
+
