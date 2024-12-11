@@ -137,6 +137,7 @@ async function pruefprotokollPDF(tasks) {
       doc.line(x, y-2.5, x+2.4, y);
     }
   }
+
   function header(task){
     doc.addImage(img, 'jpg', 143, 10,47,12)
     doc.setTextColor("#000000");
@@ -146,26 +147,26 @@ async function pruefprotokollPDF(tasks) {
     doc.setFontSize(8.5);
     doc.text("Auftraggeber", ml, mt);
     doc.setFont(undefined,"normal");
-    doc.text("Firma: Atos Medical GmbH", ml, mt+step);
+    doc.text("Firma: Coloplast Distribution GmbH", ml, mt+step);
     doc.text("Ansprechpartner: Thomas Hoffstadt", ml, mt+(2*step));
-    doc.text("Tel.: 02241 1493151", ml, mt+(3*step));
-    doc.text("Straße: Mühlheimer Str. 3-7", ml+ml2, mt+step);
-    doc.text("PLZ, Ort: 53840 Troisdorf", ml+ml2, mt+(2*step));
+    doc.text("", ml, mt+(3*step)); //war Telefonnummer (Tel.:..)
+    doc.text("Straße: Werner-Schroeder-Str. 1", ml+ml2, mt+step);
+    doc.text("PLZ, Ort: 21035 Hamburg", ml+ml2, mt+(2*step));
     doc.setFont(undefined,"bold");
-    doc.text("Gerätedaten", ml, mt+(5*step));
+    doc.text("Gerätedaten", ml, mt+(4*step));
     doc.setFont(undefined,"normal");
-    doc.text("Hersteller:", ml, mt+(6*step));
-    doc.text(task.hersteller, ml+15, mt+(6*step));
-    doc.text("Gerätenummer: -", ml, mt+(7*step));
-    doc.text("Schutzklasse: II", ml, mt+(8*step));
-    doc.text("Prüfdatum: "+formatDateToDDMMYYYY(task.datum), ml, mt+(9*step));
-    doc.text("Gerätetyp:", ml+ml2, mt+(6*step));
-    doc.text(task.bezeichnung, ml+ml2+16, mt+(6*step));
-    doc.text("Seriennummer:", ml+ml2, mt+(7*step));
-    doc.text(String(task.seriennummer), ml+ml2+22, mt+(7*step));
-    doc.text("Isolationstyp: BF", ml+ml2, mt+(8*step));
-    doc.text("Prüfer:", ml+ml2, mt+(9*step));
-    doc.text(""+pruefer.label, ml+ml2+10, mt+(9*step));
+    doc.text("Hersteller:", ml, mt+(5*step));
+    doc.text(task.hersteller, ml+15, mt+(5*step));
+    doc.text("Gerätenummer: -", ml, mt+(6*step));
+    doc.text("Schutzklasse: II", ml, mt+(7*step));
+    doc.text("Prüfdatum: "+formatDateToDDMMYYYY(task.datum), ml, mt+(8*step));
+    doc.text("Gerätetyp:", ml+ml2, mt+(5*step));
+    doc.text(task.bezeichnung, ml+ml2+16, mt+(5*step));
+    doc.text("Seriennummer:", ml+ml2, mt+(6*step));
+    doc.text(String(task.seriennummer), ml+ml2+22, mt+(6*step));
+    doc.text("Isolationstyp: BF", ml+ml2, mt+(7*step));
+    doc.text("Prüfer:", ml+ml2, mt+(8*step));
+    doc.text(""+pruefer.label, ml+ml2+10, mt+(8*step));
     doc.setFont(undefined,"bold");
     doc.text("Art der Prüfung", ml, mt+(10*step));
     doc.setFont(undefined,"normal");
@@ -232,6 +233,7 @@ async function pruefprotokollPDF(tasks) {
     doc.text("Leistung im Betrieb", ml, mt+(34*step));
     doc.text("W", ml+ml4, mt+(34*step));
   }
+
   function geraet(task){
     if (task.hersteller == "Aerogen Ltd"){
       doc.text(""+task.l1, ml+ml5, mt+(31*step));
@@ -312,6 +314,7 @@ async function pruefprotokollPDF(tasks) {
     doc.text("Unterschrift:", ml+ml3+12, mt+(45.5*step));
     doc.addImage(unterschrift, 'jpg', ml+ml3+30, mt+(43.8*step),30,12)
   }
+
   function grid(task){
     let skip;
     let lines;
@@ -322,6 +325,8 @@ async function pruefprotokollPDF(tasks) {
       skip=217; 
       lines=23;
     }
+
+
     doc.setFillColor(230,230,230);
     doc.rect(ml-3, mt+50, 168, step, 'F');
     doc.rect(ml-3, mt+88, 168, step, 'F');
@@ -330,22 +335,22 @@ async function pruefprotokollPDF(tasks) {
     doc.line(ml-3, mt+80+step-2, ml-3, mt+80-step+2);
     doc.line(ml+165, mt+80+step-2, ml+165, mt+80-step+2);
     doc.line(ml-3, mt+80-step+2, ml+165, mt+80-step+2);
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 4; i++) {
       doc.line(ml-3, (mt-step+1.5)+(step*i), ml+165, (mt-step+1.5)+(step*i));
-      if (i<3){
+      if (i<2){
         doc.line(ml-3, (mt-step+1.5)+(step*i), ml-3, (mt+step+1.5)+(step*i));
         doc.line(ml+165, (mt-step+1.5)+(step*i), ml+165, (mt+step+1.5)+(step*i));
       }
-      if(i!=0 && i<3) {doc.line(ml+ml2-2, (mt-step+1.5)+(step*i), ml+ml2-2, (mt+step+1.5)+(step*i)); }
+      if(i!=0 && i<2) {doc.line(ml+ml2-2, (mt-step+1.5)+(step*i), ml+ml2-2, (mt+step+1.5)+(step*i)); }
     } 
-    for (let i = 0; i < 10; i++) {
-      doc.line(ml-3, (28+mt-step+0.5)+(step*i), ml+165, (28+mt-step+0.5)+(step*i));
-      if (i<8){
-        doc.line(ml-3, (28+mt-step+0.5)+(step*i), ml-3, (28+mt+step+0.5)+(step*i));
-        doc.line(ml+165, (28+mt-step+0.5)+(step*i), ml+165, (28+mt+step+0.5)+(step*i));
+    for (let i = 0; i < 11; i++) {
+      doc.line(ml-3, (23+mt-step)+(step*i), ml+165, (23+mt-step)+(step*i));
+      if (i<9){
+        doc.line(ml-3, (23+mt-step)+(step*i), ml-3, (23+mt+step)+(step*i));
+        doc.line(ml+165, (23+mt-step)+(step*i), ml+165, (23+mt+step)+(step*i));
       }
-      if(i!=0 && i<4 ) {doc.line(ml+ml2-2, (28+mt-step+0.5)+(step*i), ml+ml2-2, (28+mt+step+0.5)+(step*i)); }
-      if(i>5 && i<8 ) {doc.line(ml+ml2-2, (28+mt-step+0.5)+(step*i), ml+ml2-2, (28+mt+step+0.5)+(step*i)); }
+      if(i!=0 && i<5 ) {doc.line(ml+ml2-2, (23+mt-step)+(step*i), ml+ml2-2, (23+mt+step)+(step*i)); }
+      if(i>6 && i<9 ) {doc.line(ml+ml2-2, (23+mt-step)+(step*i), ml+ml2-2, (23+mt+step)+(step*i)); }
     } 
     for (let i = 0; i < lines; i++) {
       if (i !=7){
@@ -359,6 +364,8 @@ async function pruefprotokollPDF(tasks) {
         doc.line(ml-3, (92+mt-step+1.5)+(step*i), ml+165, (92+mt-step+1.5)+(step*i));
       }
     } 
+    doc.setFillColor(255,255,255);
+    doc.rect(ml-4, mt+44.7, 170, 5.2, 'F');
     // GESAMTBEWERTUNG
     doc.line(ml-3, (skip+mt-step+0.5), ml-3, (skip+mt+(3*step)+0.5));
     doc.line(ml+165, (skip+mt-step+0.5), ml+165, (skip+mt+(3*step)+0.5));
@@ -368,6 +375,7 @@ async function pruefprotokollPDF(tasks) {
     doc.line(ml-3, (skip+mt+0.5), ml+165, (skip+mt+0.5));
     doc.line(ml-3, (skip+mt-step+11.5), ml4-3, (skip+mt-step+11.5));
   };
+
   const zip = new JSZip();
   for (let task of tasks) {
     doc = new jsPDF();
